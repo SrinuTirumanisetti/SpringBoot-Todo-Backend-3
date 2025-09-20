@@ -8,15 +8,15 @@
  * import java.util.*;
  *
  */
-
-// Write your code here
 package com.example.todo.service;
 
 import com.example.todo.model.Todo;
 import com.example.todo.repository.TodoRepository;
 import com.example.todo.repository.TodoJpaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
@@ -56,27 +56,33 @@ public class TodoJpaService implements TodoRepository {
     }
 
     public Todo getTodoById(int id) {
-        return findById(id).orElseThrow(NoSuchElementException::new);
+        return findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Todo not found")
+        );
     }
 
     public Todo updateTodo(int id, Map<String, String> updates) {
-        Todo existingTodo = findById(id).orElseThrow(NoSuchElementException::new);
+        Todo existingTodo = findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Todo not found")
+        );
 
         if (updates.containsKey("todo")) {
             existingTodo.setTodo(updates.get("todo"));
         }
-        if (updates.containsKey("status")) {
-            existingTodo.setStatus(updates.get("status"));
-        }
         if (updates.containsKey("priority")) {
             existingTodo.setPriority(updates.get("priority"));
+        }
+        if (updates.containsKey("status")) {
+            existingTodo.setStatus(updates.get("status"));
         }
 
         return save(existingTodo);
     }
 
     public void deleteTodo(int id) {
-        Todo existingTodo = findById(id).orElseThrow(NoSuchElementException::new);
+        Todo existingTodo = findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Todo not found")
+        );
         deleteById(existingTodo.getId());
     }
 }
